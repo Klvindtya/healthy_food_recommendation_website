@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cek Rekomendasi Makanan Sehat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Cek Rekomendasi Makanan Sehat</h1>
+
+    <form id="foodForm">
+        <label>Usia: <span id="ageValue">25</span> tahun</label><br>
+        <input type="range" id="age" name="age" min="15" max="80" value="25"
+               oninput="document.getElementById('ageValue').innerText = this.value"><br><br>
+
+        <label>Jenis Kelamin</label><br>
+        <select name="gender">
+            <option value="Pria">Pria</option>
+            <option value="Wanita">Wanita</option>
+        </select><br><br>
+
+        <label>Berat Badan (kg)</label><br>
+        <input type="number" step="0.1" name="weight" required><br><br>
+
+        <label>Tinggi Badan (cm)</label><br>
+        <input type="number" step="0.1" name="height" required><br><br>
+
+        <label>Tingkat Aktivitas</label><br>
+        <select name="activity_level">
+            <option value="Sedentary">Sedentary</option>
+            <option value="Lightly Active">Lightly Active</option>
+            <option value="Moderately Active">Moderately Active</option>
+            <option value="Very Active">Very Active</option>
+        </select><br><br>
+
+        <label>Kondisi Kesehatan</label><br>
+        <select name="health_condition">
+            <option value="Normal">Normal</option>
+            <option value="Diabetes">Diabetes</option>
+            <option value="Hypertension">Hypertension</option>
+            <option value="High Cholesterol">High Cholesterol</option>
+            <option value="Obesity">Obesity</option>
+        </select><br><br>
+
+        <label>Jam Tidur (jam/hari)</label><br>
+        <input type="number" step="0.5" name="sleep_hours" required><br><br>
+
+        <label>Olahraga (jam/minggu)</label><br>
+        <input type="number" step="0.5" name="weekly_exercise" required><br><br>
+
+        <button type="submit">Dapatkan Rekomendasi</button>
+    </form>
+
+    <div id="loading" style="display:none;">⏳ Memproses...</div>
+    <div id="resultArea"></div>
+
+    <script>
+        document.getElementById('foodForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const resultArea = document.getElementById('resultArea');
+            const loading = document.getElementById('loading');
+
+            resultArea.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                loading.style.display = 'none';
+
+                if (!result.success) {
+                    resultArea.innerHTML = `<p style="color:red">Error: ${result.error}</p>`;
+                    return;
+                }
+
+                let html = `
+                    <h3>Diet yang Direkomendasikan</h3>
+                    <p><b>${result.predicted_diet}</b> (Keyakinan: ${result.confidence.toFixed(1)}%)</p>
+                    <h3>Rekomendasi Makanan</h3>
+                    <table border="1" cellpadding="5">
+                        <tr>
+                            <th>Nama Makanan</th><th>Kategori</th><th>Kalori (kcal)</th>
+                            <th>Protein (g)</th><th>Lemak (g)</th><th>Karbo (g)</th>
+                            <th>Serat (g)</th><th>Health Score</th>
+                        </tr>`;
+
+                result.recommendations.forEach(food => {
+                    html += `<tr>
+                        <td>${food.food_name}</td>
+                        <td>${food.food_type}</td>
+                        <td>${food.calories.toFixed(0)}</td>
+                        <td>${food.protein.toFixed(1)}</td>
+                        <td>${food.fat.toFixed(1)}</td>
+                        <td>${food.carbs.toFixed(1)}</td>
+                        <td>${food.fiber.toFixed(1)}</td>
+                        <td>${food.health_score.toFixed(1)}</td>
+                    </tr>`;
+                });
+                html += `</table>`;
+
+                resultArea.innerHTML = html;
+            } catch (err) {
+                loading.style.display = 'none';
+                resultArea.innerHTML = `<p style="color:red">Gagal memproses: ${err}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
