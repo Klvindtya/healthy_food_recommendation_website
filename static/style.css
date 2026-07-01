@@ -1,0 +1,383 @@
+/* ==========================================================================
+   1. RESET GLOBAL & BASE STYLES
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+    background-color: #f4f7f6;
+    color: #1e293b;
+    padding: 40px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+h3 {
+    color: #0f172a;
+    font-size: 18px;
+    margin: 24px 0 12px 0;
+}
+
+/* ==========================================================================
+   2. FORM LAYOUT FIX (SINKRONISASI COCOK UNTUK STRUKTUR BAWAAN INDEX)
+   ========================================================================== */
+#foodForm {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 24px;
+    
+    /* Menggunakan Flexbox searah kolom agar berurutan lurus sempurna kebawah */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Menghilangkan fungsi tag <br> bawaan agar tidak merusak jarak antar-baris */
+#foodForm br {
+    display: none;
+}
+
+/* Memberikan jarak renggang yang seragam untuk setiap label */
+#foodForm label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Khusus label pertama (Usia) agar tidak terlalu menempel ke atas */
+#foodForm label:first-of-type {
+    margin-top: 0;
+}
+
+/* Pengaturan Input Angka & Select Box agar Sejajar Rata Kanan-Kiri */
+input[type="number"], 
+select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background-color: #fff;
+    color: #334155;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+/* Efek fokus input box */
+input[type="number"]:focus, 
+select:focus {
+    border-color: #3cb371;
+    box-shadow: 0 0 0 3px rgba(60, 179, 113, 0.1);
+}
+
+/* Range Slider Usia */
+input[type="range"] {
+    width: 100%;
+    accent-color: #3cb371;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+#ageValue {
+    background-color: #e6f4ea;
+    color: #137333;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+/* Tombol Submit Hijau Sesuai Mockup */
+button[type="submit"] {
+    background-color: #3cb371;
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 28px;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover {
+    background-color: #2e8b57;
+}
+
+/* Status Loading */
+#loading {
+    font-weight: 600;
+    color: #475569;
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* ==========================================================================
+   3. RESULT CONTAINER & TABLE RESPONSIVE
+   ========================================================================== */
+#resultArea {
+    width: 100%;
+    max-width: 1000px;
+}
+
+#resultArea table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: none;
+    margin-top: 15px;
+}
+
+#resultArea th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 14px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+#resultArea td {
+    padding: 14px;
+    font-size: 13.5px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: center;
+}
+
+/* ==========================================================================
+   4. CHART CONTAINER (Mencegah Grafik Meluap Saat Zoom 100%)
+   ========================================================================== */
+#chartArea {
+    width: 100%;
+    max-width: 1000px;
+}
+
+#chartArea > div[style*="display:flex"] {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 20px !important;
+}
+
+#chartArea > div[style*="display:flex"] > div {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    flex: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+#chartArea h4 {
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 16px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+canvas {
+    max-height: 200px !important;
+    width: 100% !important;
+}
+
+/* Media Query untuk Tablet / Layar Kecil */
+@media (max-width: 900px) {
+    #chartArea > div[style*="display:flex"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   DYNAMICS LOADING SCREEN OVERLAY (image_0bf4d0.png)
+   ========================================================================== */
+#dynamicLoadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #f4fcf9; /* Nuansa sage green sangat cerah sesuai gambar */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.loading-container {
+    text-align: center;
+    width: 100%;
+    max-width: 480px;
+}
+
+/* Animasi Spinner Daun */
+.loading-logo-animation {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #3cb371;
+    border-radius: 50%;
+    background-color: rgba(60, 179, 113, 0.05);
+    opacity: 0.4;
+    animation: pulseWave 2s infinite ease-out;
+}
+
+.animated-leaf {
+    font-size: 32px;
+    animation: floatLeaf 3s infinite ease-in-out;
+}
+
+/* Typography Text */
+.loading-container h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.loading-container p {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 32px;
+}
+
+/* Progress Bar Group */
+.progress-bar-wrapper {
+    margin-bottom: 30px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    width: 0%;
+    height: 100%;
+    background-color: #3cb371;
+    border-radius: 10px;
+    transition: width 0.1s linear;
+}
+
+/* Stepper Checklist Status */
+.loading-steps {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    display: inline-block;
+}
+
+.loading-steps .step {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 24px;
+    transition: color 0.3s ease;
+}
+
+/* Status Default: Lingkaran Kosong */
+.loading-steps .step::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 50%;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+/* Status Sedang Diproses: Titik Hitam/Hijau di Tengah */
+.loading-steps .step.active {
+    color: #334155;
+    font-weight: 500;
+}
+.loading-steps .step.active::before {
+    border-color: #3cb371;
+    background: radial-gradient(circle, #3cb371 40%, transparent 50%);
+}
+
+/* Status Selesai: Checklist Centang Hijau */
+.loading-steps .step.checked {
+    color: #1e293b;
+}
+.loading-steps .step.checked::before {
+    content: '✓';
+    border-color: #3cb371;
+    background: #3cb371;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Keyframes Animation */
+@keyframes pulseWave {
+    0% { transform: scale(0.6); opacity: 0.8; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes floatLeaf {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-6px) rotate(10deg); }
+}

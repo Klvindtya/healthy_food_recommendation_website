@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cek Rekomendasi Makanan Sehat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
     <h1>Cek Rekomendasi Makanan Sehat</h1>
 
     <form id="foodForm">
         <label>Usia: <span id="ageValue">25</span> tahun</label><br>
-        <input type="range" id="age" name="age" min="15" max="80" value="25"
-               oninput="document.getElementById('ageValue').innerText = this.value"><br><br>
+        <input type="range" id="age" name="age" min="15" max="80" value="25" oninput="document.getElementById('ageValue').innerText = this.value"><br><br>
 
         <label>Jenis Kelamin</label><br>
         <select name="gender">
@@ -20,10 +22,10 @@
         </select><br><br>
 
         <label>Berat Badan (kg)</label><br>
-        <input type="number" step="0.1" name="weight" required><br><br>
+        <input type="number" step="0.1" name="weight" placeholder="65" required><br><br>
 
         <label>Tinggi Badan (cm)</label><br>
-        <input type="number" step="0.1" name="height" required><br><br>
+        <input type="number" step="0.1" name="height" placeholder="165" required><br><br>
 
         <label>Tingkat Aktivitas</label><br>
         <select name="activity_level">
@@ -43,30 +45,30 @@
         </select><br><br>
 
         <label>Jam Tidur (jam/hari)</label><br>
-        <input type="number" step="0.5" name="sleep_hours" required><br><br>
+        <input type="number" step="0.5" name="sleep_hours" placeholder="8" required><br><br>
 
         <label>Olahraga (jam/minggu)</label><br>
-        <input type="number" step="0.5" name="weekly_exercise" required><br><br>
+        <input type="number" step="0.5" name="weekly_exercise" placeholder="3" required><br><br>
 
         <button type="submit">Dapatkan Rekomendasi</button>
     </form>
 
-    <div id="loading" style="display:none;">⏳ Memproses...</div>
+    <div id="loading" style="display: none;">Menganalisis data...</div>
+
     <div id="resultArea"></div>
 
-    <!-- Canvas untuk grafik -->
-    <div id="chartArea" style="display:none;">
+    <div id="chartArea" style="display: none;">
         <h3>Analisis Rekomendasi Makanan</h3>
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:280px;">
+        <div style="display: flex; gap: 20px;">
+            <div>
                 <h4>Health Score Makanan</h4>
                 <canvas id="chartHealthScore"></canvas>
             </div>
-            <div style="flex:1; min-width:280px;">
+            <div>
                 <h4>Distribusi Kategori</h4>
                 <canvas id="chartCategory"></canvas>
             </div>
-            <div style="flex:1; min-width:280px;">
+            <div>
                 <h4>Rata-rata Kandungan Nutrisi</h4>
                 <canvas id="chartNutrisi"></canvas>
             </div>
@@ -81,13 +83,71 @@
         document.getElementById('foodForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            const resultArea = document.getElementById('resultArea');
-            const chartArea = document.getElementById('chartArea');
-            const loading = document.getElementById('loading');
+            
+            // 1. Buat elemen overlay loading secara dinamis ke dalam body (image_0bf4d0.png)
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'dynamicLoadingOverlay';
+            loadingOverlay.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-logo-animation">
+                        <div class="pulse-ring"></div>
+                        <span class="animated-leaf">🍃</span>
+                    </div>
+                    <h2>Menganalisis Data Anda</h2>
+                    <p>AI sedang memproses profil kesehatan Anda untuk memberikan rekomendasi yang tepat</p>
+                    
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-info">
+                            <span>Progres Analisis</span>
+                            <span id="dynProgressText">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="dynProgressBarFill" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
 
-            resultArea.innerHTML = '';
-            chartArea.style.display = 'none';
-            loading.style.display = 'block';
+                    <ul class="loading-steps">
+                        <li id="dynStep1" class="step">Menganalisis data kesehatan Anda...</li>
+                        <li id="dynStep2" class="step">Menghitung indeks massa tubuh...</li>
+                        <li id="dynStep3" class="step">Mencocokkan pola nutrisi optimal...</li>
+                        <li id="dynStep4" class="step">Memproses rekomendasi makanan...</li>
+                        <li id="dynStep5" class="step">Menyiapkan hasil analisis...</li>
+                    </ul>
+                </div>
+            `;
+            document.body.appendChild(loadingOverlay);
+
+            // Sembunyikan elemen lama agar bersih saat proses pemuatan berlangsung
+            document.getElementById('chartArea').style.display = 'none';
+            document.getElementById('resultArea').innerHTML = '';
+
+            // 2. Fungsi menjalankan jalannya progress bar simulasi
+            const runAnimation = () => {
+                return new Promise((resolve) => {
+                    const bar = document.getElementById('dynProgressBarFill');
+                    const txt = document.getElementById('dynProgressText');
+                    let progress = 0;
+                    
+                    const interval = setInterval(() => {
+                        progress += 2;
+                        if (bar) bar.style.width = progress + '%';
+                        if (txt) txt.innerText = progress + '%';
+
+                        if(progress >= 20) document.getElementById('dynStep1').className = 'step active checked';
+                        if(progress >= 40) document.getElementById('dynStep2').className = 'step active checked';
+                        if(progress >= 60) document.getElementById('dynStep3').className = 'step active checked';
+                        if(progress >= 80) document.getElementById('dynStep4').className = 'step active';
+                        if(progress >= 95) document.getElementById('dynStep5').className = 'step active';
+
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            setTimeout(resolve, 300);
+                        }
+                    }, 35);
+                });
+            };
+
+            const animationPromise = runAnimation();
 
             try {
                 const response = await fetch('/predict', {
@@ -95,56 +155,66 @@
                     body: formData
                 });
                 const result = await response.json();
-                loading.style.display = 'none';
+
+                // Tunggu progress bar menyentuh angka 100% baru hilangkan screen
+                await animationPromise;
+                loadingOverlay.remove();
 
                 if (!result.success) {
-                    resultArea.innerHTML = `<p style="color:red">Error: ${result.error}</p>`;
+                    document.getElementById('resultArea').innerHTML = `<p style="color:red; text-align:center;">Error: ${result.error}</p>`;
                     return;
                 }
 
-                // ── Tabel hasil ──
+                // 3. Render Tabel Rekomendasi ke dalam resultArea bawaan asli
                 let html = `
-                    <h3>Diet yang Direkomendasikan</h3>
-                    <p><b>${result.predicted_diet.replace('_', ' ')}</b> (Keyakinan: ${result.confidence.toFixed(1)}%)</p>
-                    <h3>Rekomendasi Makanan</h3>
-                    <table border="1" cellpadding="5">
-                        <tr>
-                            <th>No</th><th>Nama Makanan</th><th>Kategori</th>
-                            <th>Kalori (kcal)</th><th>Protein (g)</th><th>Lemak (g)</th>
-                            <th>Karbo (g)</th><th>Serat (g)</th><th>Health Score</th>
-                        </tr>`;
+                    <h3>Diet Terprediksi: <b style="color: #3cb371;">${result.predicted_diet.replace('_', ' ')}</b> (${(result.confidence).toFixed(1)}%)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Makanan</th>
+                                <th>Kategori</th>
+                                <th>Kalori (kcal)</th>
+                                <th>Protein (g)</th>
+                                <th>Lemak (g)</th>
+                                <th>Karbo (g)</th>
+                                <th>Serat (g)</th>
+                                <th>Health Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
                 result.recommendations.forEach((food, i) => {
-                    html += `<tr>
-                        <td>${i + 1}</td>
-                        <td>${food.food_name || '-'}</td>
-                        <td>${food.food_type || '-'}</td>
-                        <td>${(food.calories || 0).toFixed(0)}</td>
-                        <td>${(food.protein || 0).toFixed(1)}</td>
-                        <td>${(food.fat || 0).toFixed(1)}</td>
-                        <td>${(food.carbs || 0).toFixed(1)}</td>
-                        <td>${(food.fiber || 0).toFixed(1)}</td>
-                        <td>${(food.health_score || 0).toFixed(1)}</td>
-                    </tr>`;
+                    html += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td><b>${food.food_name || '-'}</b></td>
+                            <td>${food.food_type || '-'}</td>
+                            <td>${(food.calories || 0).toFixed(0)}</td>
+                            <td>${(food.protein || 0).toFixed(1)}</td>
+                            <td>${(food.fat || 0).toFixed(1)}</td>
+                            <td>${(food.carbs || 0).toFixed(1)}</td>
+                            <td>${(food.fiber || 0).toFixed(1)}</td>
+                            <td><b>${(food.health_score || 0).toFixed(0)}</b></td>
+                        </tr>`;
                 });
-                html += `</table>`;
-                resultArea.innerHTML = html;
+                
+                html += `</tbody></table>`;
+                document.getElementById('resultArea').innerHTML = html;
 
-                // ── Data untuk grafik ──
+                // 4. Munculkan area grafik dan lakukan render Chart.js
+                document.getElementById('chartArea').style.display = 'block';
+
                 const foods = result.recommendations;
-                const foodNames = foods.map(f => (f.food_name || '').substring(0, 20));
+                const foodNames = foods.map(f => (f.food_name || '').substring(0, 15));
                 const healthScores = foods.map(f => f.health_score || 0);
 
-                // Hitung distribusi kategori
                 const catCount = {};
                 foods.forEach(f => {
                     const cat = f.food_type || 'Other';
                     catCount[cat] = (catCount[cat] || 0) + 1;
                 });
-                const catLabels = Object.keys(catCount);
-                const catValues = Object.values(catCount);
 
-                // Rata-rata nutrisi
                 const avgNutrisi = {
                     protein: foods.reduce((s, f) => s + (f.protein || 0), 0) / foods.length,
                     carbs:   foods.reduce((s, f) => s + (f.carbs || 0), 0) / foods.length,
@@ -152,67 +222,73 @@
                     fiber:   foods.reduce((s, f) => s + (f.fiber || 0), 0) / foods.length,
                 };
 
-                chartArea.style.display = 'block';
-
-                // Destroy chart lama kalau ada
                 if (chartHealthScore) chartHealthScore.destroy();
                 if (chartCategory) chartCategory.destroy();
                 if (chartNutrisi) chartNutrisi.destroy();
 
-                // Chart 1 — Health Score (horizontal bar)
+                Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+                // Grafik 1 — Bar Horizontal Health Score
                 chartHealthScore = new Chart(document.getElementById('chartHealthScore'), {
                     type: 'bar',
                     data: {
                         labels: foodNames,
                         datasets: [{
-                            label: 'Health Score',
                             data: healthScores,
-                            backgroundColor: 'rgba(60, 179, 113, 0.8)',
+                            backgroundColor: '#3cb371',
+                            borderRadius: 4
                         }]
                     },
                     options: {
                         indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: { x: { min: 0, max: 100 } }
                     }
                 });
 
-                // Chart 2 — Pie kategori
+                // Grafik 2 — Pie Chart Kategori Makanan
                 chartCategory = new Chart(document.getElementById('chartCategory'), {
                     type: 'pie',
                     data: {
-                        labels: catLabels,
+                        labels: Object.keys(catCount),
                         datasets: [{
-                            data: catValues,
-                            backgroundColor: [
-                                '#4dc9f6','#f67019','#f53794',
-                                '#537bc4','#acc236','#166a8f','#00a950'
-                            ]
+                            data: Object.values(catCount),
+                            backgroundColor: ['#e28743', '#76b5c5', '#873e23', '#1e3d59', '#cbd5e1']
                         }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
                     }
                 });
 
-                // Chart 3 — Bar nutrisi rata-rata
+                // Grafik 3 — Bar Vertikal Rata-rata Nutrisi
                 chartNutrisi = new Chart(document.getElementById('chartNutrisi'), {
                     type: 'bar',
                     data: {
                         labels: ['Protein', 'Karbo', 'Lemak', 'Serat'],
                         datasets: [{
-                            label: 'gram per 100g',
-                            data: [avgNutrisi.protein, avgNutrisi.carbs,
-                                   avgNutrisi.fat, avgNutrisi.fiber],
-                            backgroundColor: ['#4472c4','#ed7d31','#ffc000','#70ad47']
+                            data: [avgNutrisi.protein, avgNutrisi.carbs, avgNutrisi.fat, avgNutrisi.fiber],
+                            backgroundColor: ['#3cb371', '#e28743', '#ff7f50', '#76b5c5'],
+                            borderRadius: 6
                         }]
                     },
                     options: {
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true } }
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
                     }
                 });
 
             } catch (err) {
-                loading.style.display = 'none';
-                resultArea.innerHTML = `<p style="color:red">Gagal memproses: ${err}</p>`;
+                if (document.getElementById('dynamicLoadingOverlay')) {
+                    document.getElementById('dynamicLoadingOverlay').remove();
+                }
+                console.error(err);
+                alert('Terjadi kendala saat menghubungkan ke server.');
             }
         });
     </script>
